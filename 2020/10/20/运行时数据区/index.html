@@ -20,15 +20,19 @@
     var CONFIG = {"hostname":"ymaster1.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="article">
+  <meta name="description" content="​    运行时数据区作为深入理解java虚拟机这本书最先提及到的内容，是作为我们理解jvm的基石。 运行时环境​    我们的每一个java进程都会产生一个jvm虚拟机，同时对应一个单实例的Runtime类对象，用于表示运行时环境，我们可以获取各种运行时相关的环境参数，比如内存和cpu,他也可以用于执行命令，当然它并不属于运行时数据区包括的内容。 12345678910111213Runtime">
+<meta property="og:type" content="article">
 <meta property="og:title" content="运行时数据区">
 <meta property="og:url" content="https://ymaster1.github.io/2020/10/20/%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA/index.html">
 <meta property="og:site_name" content="ymaster1&#39;s blog">
+<meta property="og:description" content="​    运行时数据区作为深入理解java虚拟机这本书最先提及到的内容，是作为我们理解jvm的基石。 运行时环境​    我们的每一个java进程都会产生一个jvm虚拟机，同时对应一个单实例的Runtime类对象，用于表示运行时环境，我们可以获取各种运行时相关的环境参数，比如内存和cpu,他也可以用于执行命令，当然它并不属于运行时数据区包括的内容。 12345678910111213Runtime">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ymaster1.github.io/2020/10/20/%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA/局部变量表.png">
 <meta property="article:published_time" content="2020-10-20T15:51:22.000Z">
-<meta property="article:modified_time" content="2020-10-20T16:34:06.707Z">
+<meta property="article:modified_time" content="2020-10-22T02:17:58.038Z">
 <meta property="article:author" content="ymaster1">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ymaster1.github.io/2020/10/20/%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA/局部变量表.png">
 
 <link rel="canonical" href="https://ymaster1.github.io/2020/10/20/%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA/">
 
@@ -133,7 +137,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">8</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">10</span></a>
 
   </li>
         <li class="menu-item menu-item-commonweal">
@@ -201,7 +205,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-10-21 00:34:06" itemprop="dateModified" datetime="2020-10-21T00:34:06+08:00">2020-10-21</time>
+                <time title="修改时间：2020-10-22 10:17:58" itemprop="dateModified" datetime="2020-10-22T10:17:58+08:00">2020-10-22</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -224,7 +228,67 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <p>​    运行时数据区作为深入理解java虚拟机这本书最先提及到的内容，是作为我们理解jvm的基石。</p>
+<h2 id="运行时环境"><a href="#运行时环境" class="headerlink" title="运行时环境"></a>运行时环境</h2><p>​    我们的每一个java进程都会产生一个jvm虚拟机，同时对应一个单实例的Runtime类对象，用于表示运行时环境，我们可以获取各种运行时相关的环境参数，比如内存和cpu,他也可以用于执行命令，当然它并不属于运行时数据区包括的内容。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Runtime runtime = Runtime.getRuntime();</span><br><span class="line"><span class="comment">//获取当前设备处理器个数</span></span><br><span class="line">        <span class="keyword">int</span> i1 = runtime.availableProcessors();</span><br><span class="line">        <span class="comment">//   获取可用内存，单位是byte</span></span><br><span class="line">        <span class="keyword">long</span> l = runtime.freeMemory();</span><br><span class="line">        <span class="comment">//获取jvm的总数量，该值会不断的变化</span></span><br><span class="line">        <span class="keyword">long</span>  totalMemory = runtime.totalMemory();</span><br><span class="line">        <span class="comment">//获取jvm 可以最大使用的内存数量，如果没有被限制 返回 Long.MAX_VALUE;</span></span><br><span class="line">        <span class="keyword">long</span> maxMemory = runtime.maxMemory();</span><br><span class="line">        System.out.println(<span class="string">&quot;可用最大内存为:&quot;</span>+maxMemory/<span class="number">1024</span>/<span class="number">1024</span>+<span class="string">&quot;mb&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;全部内存为:&quot;</span>+totalMemory/<span class="number">1024</span>/<span class="number">1024</span>+<span class="string">&quot;mb&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;可用内存为:&quot;</span>+l/<span class="number">1024</span>/<span class="number">1024</span>+<span class="string">&quot;mb&quot;</span>);</span><br><span class="line">        System.out.println(i1);</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+
+<h2 id="虚拟机栈和本地方法栈"><a href="#虚拟机栈和本地方法栈" class="headerlink" title="虚拟机栈和本地方法栈"></a>虚拟机栈和本地方法栈</h2><p>​    虚拟机栈可以理解为我们平时所说的栈内存，因为还有一个本地方法栈是基于c/c++些的，只有native方法才会使用到它，我们平时写代码很少会直接与之接触。</p>
+<p>​    首先他们两块区域都是<strong>线程私有</strong>的，即每创建一个线程就对对应创建一个虚拟机栈（后进先出），其内部由一个个栈帧-Frame组成，对应该线程对涉及到的每一个方法的调用，当调用一个方法时，就会创建一个新的栈帧并压入栈顶，方法执行结束后就将该栈帧自动弹出（所以不涉及垃圾回收)。如果虚拟机栈的深度不够线程的一次完整执行，就会抛出StackOverflowError（栈内存溢出）。最常见的就是递归，如果没有控制好结束标志，就会抛出该异常。</p>
+<h3 id="栈帧"><a href="#栈帧" class="headerlink" title="栈帧"></a>栈帧</h3><p>​    栈帧是虚拟机栈组成的基本单位，可以理解为数组中的一个个元素。栈帧才是真正存储数据的内存区域。</p>
+<h4 id="局部变量表（LocalVaribles）"><a href="#局部变量表（LocalVaribles）" class="headerlink" title="局部变量表（LocalVaribles）"></a>局部变量表（LocalVaribles）</h4><p>​    局部变量表是栈帧中重要的一个数据结构，它是一个数字类型的数组（因为几乎所有的基本数据类型都可以用数字来表示）,主要存储方法<strong>参数</strong>，和一些定义在方法内的局部变量（基本数据类型<strong>值</strong>，对象引用，返回地址），可以使用jclasslib插件查看编译后的class文件如下</p>
+<img src="/2020/10/20/%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA/局部变量表.png" alt="局部变量表" style="zoom:33%;">
+
+<p>可以看到我们的A()方法对应的栈帧的局部变量表，<code>String s</code>是该方法的参数，按照顺序它应该被最先存储，其他几个方法局部变量类似，都会被存储，但是发现最先存储的确是<code>this</code>,所以这里也很好的验证了，在所有<strong>非静态方法</strong>里面，它的局部变量表第一个参数都是this,所以我们可以不需要显示声明而直接调用，而不能在static方法中使用this。它指向当前类实例的引用，构造器也是一样。</p>
+<p>也可以先将其编译，然后使用<code>javap -v xxx.class</code>,如果是使用idea,需要先cd 到out目录下该包的位子</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><span class="line">PS D:\IdeaProject\javaSE\out\production\javaSE\jvm&gt; javap -v .\StackTest.class</span><br><span class="line">Classfile /D:/IdeaProject/javaSE/out/production/javaSE/jvm/StackTest.class</span><br><span class="line">  Last modified 2020-10-22; size 555 bytes</span><br><span class="line">  MD5 checksum 49c1af828a887dcf59a89e791e0f9de7</span><br><span class="line">  Compiled from &quot;StackTest.java&quot;</span><br><span class="line">public class jvm.StackTest extends jvm.ClassLoaderT</span><br><span class="line">  minor version: 0</span><br><span class="line">  major version: 52</span><br><span class="line">  flags: ACC_PUBLIC, ACC_SUPER</span><br><span class="line">Constant pool:</span><br><span class="line"><span class="meta">   #</span><span class="bash">1 = Methodref          <span class="comment">#3.#25         // jvm/ClassLoaderT.&quot;&lt;init&gt;&quot;:()V</span></span></span><br><span class="line"><span class="meta">   #</span><span class="bash">2 = String             <span class="comment">#26            // hello</span></span></span><br><span class="line"><span class="meta">   #</span><span class="bash">3 = Class              <span class="comment">#27            // jvm/ClassLoaderT</span></span></span><br><span class="line"><span class="meta">   #</span><span class="bash">4 = Class              <span class="comment">#28            // jvm/StackTest</span></span></span><br><span class="line"><span class="meta">   #</span><span class="bash">5 = Utf8               &lt;init&gt;</span></span><br><span class="line"><span class="meta">   #</span><span class="bash">6 = Utf8               ()V</span></span><br><span class="line"><span class="meta">   #</span><span class="bash">7 = Utf8               Code</span></span><br><span class="line"><span class="meta">   #</span><span class="bash">8 = Utf8               LineNumberTable</span></span><br><span class="line"><span class="meta">   #</span><span class="bash">9 = Utf8               LocalVariableTable</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">10 = Utf8               this</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">11 = Utf8               Ljvm/StackTest;</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">12 = Utf8               A</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">13 = Utf8               (Ljava/lang/String;)V</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">14 = Utf8               a</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">15 = Utf8               Ljava/lang/String;</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">16 = Utf8               i</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">17 = Utf8               I</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">18 = Utf8               s</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">19 = Utf8               t</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">20 = Utf8               Ljvm/ClassLoaderT;</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">21 = Utf8               B</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">22 = Utf8               ()I</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">23 = Utf8               SourceFile</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">24 = Utf8               StackTest.java</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">25 = NameAndType        <span class="comment">#5:#6          // &quot;&lt;init&gt;&quot;:()V</span></span></span><br><span class="line"><span class="meta">  #</span><span class="bash">26 = Utf8               hello</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">27 = Utf8               jvm/ClassLoaderT</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">28 = Utf8               jvm/StackTest</span></span><br><span class="line">&#123;</span><br><span class="line">  public jvm.StackTest();</span><br><span class="line">    descriptor: ()V</span><br><span class="line">    flags: ACC_PUBLIC</span><br><span class="line">    Code:</span><br><span class="line">      stack=1, locals=1, args_size=1</span><br><span class="line">         0: aload_0</span><br><span class="line">         1: invokespecial #1                  // Method jvm/ClassLoaderT.&quot;&lt;init&gt;&quot;:()V</span><br><span class="line">         4: return</span><br><span class="line">      LineNumberTable:</span><br><span class="line">        line 8: 0</span><br><span class="line">      LocalVariableTable:</span><br><span class="line">        Start  Length  Slot  Name   Signature</span><br><span class="line">            0       5     0  this   Ljvm/StackTest;</span><br><span class="line"></span><br><span class="line">  public void A(java.lang.String);</span><br><span class="line">    descriptor: (Ljava/lang/String;)V</span><br><span class="line">    flags: ACC_PUBLIC</span><br><span class="line">    Code:</span><br><span class="line">      stack=2, locals=5, args_size=2</span><br><span class="line">         0: bipush        100</span><br><span class="line">         2: istore_2</span><br><span class="line">         3: ldc           #2                  // String hello</span><br><span class="line">         5: astore_3</span><br><span class="line">         6: new           #3                  // class jvm/ClassLoaderT</span><br><span class="line">         9: dup</span><br><span class="line">        10: invokespecial #1                  // Method jvm/ClassLoaderT.&quot;&lt;init&gt;&quot;:()V</span><br><span class="line">        13: astore        4</span><br><span class="line">        15: return</span><br><span class="line">      LineNumberTable:</span><br><span class="line">        line 10: 0</span><br><span class="line">        line 11: 3</span><br><span class="line">        line 12: 6</span><br><span class="line">        line 14: 15</span><br><span class="line">      LocalVariableTable:</span><br><span class="line">        Start  Length  Slot  Name   Signature</span><br><span class="line">            0      16     0  this   Ljvm/StackTest;</span><br><span class="line">            0      16     1     a   Ljava/lang/String;</span><br><span class="line">            3      13     2     i   I</span><br><span class="line">            6      10     3     s   Ljava/lang/String;</span><br><span class="line">           15       1     4     t   Ljvm/ClassLoaderT;</span><br><span class="line"></span><br><span class="line">  public int B();</span><br><span class="line">    descriptor: ()I</span><br><span class="line">    flags: ACC_PUBLIC</span><br><span class="line">    Code:</span><br><span class="line">      stack=1, locals=1, args_size=1</span><br><span class="line">         0: sipush        200</span><br><span class="line">         3: ireturn</span><br><span class="line">      LineNumberTable:</span><br><span class="line">        line 16: 0</span><br><span class="line">      LocalVariableTable:</span><br><span class="line">        Start  Length  Slot  Name   Signature</span><br><span class="line">            0       4     0  this   Ljvm/StackTest;</span><br><span class="line">&#125;</span><br><span class="line">SourceFile: &quot;StackTest.java&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看到A（)方法的栈帧信息中，locals=5是在编译之后就已经确定了，加上this我们一共存储了5个变量. 当A（）执行时，100会被直接压入栈，而我们初始化的字符串hello和对象引用都是保留在常量池constant pool中，当方法执行到这一步的时候就会去引用常量池，关于对象，常量池在编译时仅保留对象引用，此时还未在堆上创建，只会在执行到这一步时才会创建，同时将符号引用（这里为#3）转换为直接引用</p>
+<p>​    同时由于他是线程私有内存区域，所以不存在安全问题，同时局部变量表的大小是在编译器就能确定下来的，<strong>就是参数和变量的个数</strong>（不是slot的个数），运行期间不会改变。</p>
+<h4 id="变量槽-slot"><a href="#变量槽-slot" class="headerlink" title="变量槽(slot)"></a>变量槽(slot)</h4><p>​    它就是局部变量表的存储单元，索引从0（存储this）开始，32bit的变量占用一个slot,64bit(dobule,long)的变量占用两个slot。</p>
+<h4 id="方法返回地址"><a href="#方法返回地址" class="headerlink" title="方法返回地址"></a>方法返回地址</h4><h4 id="动态链接（指向运行时常量池的方法引用）"><a href="#动态链接（指向运行时常量池的方法引用）" class="headerlink" title="动态链接（指向运行时常量池的方法引用）"></a>动态链接（指向运行时常量池的方法引用）</h4><p>​    java源文件被编译为class的时候，所有的<strong>引用类型变量</strong>（直接理解就是局部变量表中Signature下以L开头的变量）和<strong>方法引用</strong>都作为<strong>符号引用</strong>（#**）保存在常量池（class文件中有这个模块constant pool）中，动态连接就是将这些符号引用转换为直接引用。</p>
+<ul>
+<li><p><strong>直接或间接被局部变量表中的变量（GC root）引用的对象不会被gc</strong></p>
+</li>
+<li><p>操作数栈（Operand Stack）</p>
+<ul>
+<li>就是根据字节码指令入栈出栈，计算结果</li>
+</ul>
+</li>
+<li><p><code>-Xss</code>:设置栈最大空间，决定栈深度</p>
+</li>
+</ul>
+<h2 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h2><ul>
+<li><p>pc寄存器，存储下一条指令的地址</p>
+</li>
+<li><p>任何时间一个线程都只有一个方法执行，称为当前方法，程序计数器会记录当前方法的指令地址</p>
+</li>
+<li><p>没有oom</p>
+<h2 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h2></li>
+<li><p>内存逻辑上连续即可</p>
+</li>
+<li><p>存储<strong>几乎</strong>所有的对象和数组实例</p>
+</li>
+<li><p>方法结束后，堆上的对象不会立即清除，需要等gc</p>
+</li>
+<li><p>堆空间中有个TLAB（线程缓冲空间）是线程私有的</p>
+</li>
+<li><p><code>-Xms</code>:初始堆大小（默认1/64物理内存），<code>-Xmx</code>:最大堆大小（默认1/4物理内存），两者通常配置一样打，为了gc清理完堆区后不需要重新分隔计算堆大小，提高性能；<code>jstat -gc -pid</code>:查看堆内存分配使用情况，或者加索jvm参数<code>-XX:+PrintGCDetails</code></p>
+</li>
+<li><h2 id="方法区（非堆空间，使用的是本地内存）"><a href="#方法区（非堆空间，使用的是本地内存）" class="headerlink" title="方法区（非堆空间，使用的是本地内存）"></a>方法区（非堆空间，使用的是本地内存）</h2></li>
+<li><p>jdk8称为元空间mateSpace</p>
+</li>
+<li><p>也存放了JIT热点编译后的代码</p>
+</li>
+<li><p>存放加载进来的类信息</p>
+</li>
+<li><p>存放运行时常量池(常量池中的信息在运行时放到这里)</p>
+</li>
+<li><p>存放字符串常量池</p>
+</li>
+</ul>
+<h2 id="JIT编译器（属于执行引擎）"><a href="#JIT编译器（属于执行引擎）" class="headerlink" title="JIT编译器（属于执行引擎）"></a>JIT编译器（属于执行引擎）</h2><p>将class文件编译为机器码，用于编译热点代码并缓存，大部分代码都是要执行的时候才编译</p>
+
     </div>
 
     
@@ -321,6 +385,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E7%8E%AF%E5%A2%83"><span class="nav-number">1.</span> <span class="nav-text">运行时环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%E5%92%8C%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88"><span class="nav-number">2.</span> <span class="nav-text">虚拟机栈和本地方法栈</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%88%E5%B8%A7"><span class="nav-number">2.1.</span> <span class="nav-text">栈帧</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E8%A1%A8%EF%BC%88LocalVaribles%EF%BC%89"><span class="nav-number">2.1.1.</span> <span class="nav-text">局部变量表（LocalVaribles）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%98%E9%87%8F%E6%A7%BD-slot"><span class="nav-number">2.1.2.</span> <span class="nav-text">变量槽(slot)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E8%BF%94%E5%9B%9E%E5%9C%B0%E5%9D%80"><span class="nav-number">2.1.3.</span> <span class="nav-text">方法返回地址</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%EF%BC%88%E6%8C%87%E5%90%91%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0%E7%9A%84%E6%96%B9%E6%B3%95%E5%BC%95%E7%94%A8%EF%BC%89"><span class="nav-number">2.1.4.</span> <span class="nav-text">动态链接（指向运行时常量池的方法引用）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">3.</span> <span class="nav-text">程序计数器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A0%86"><span class="nav-number">4.</span> <span class="nav-text">堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA%EF%BC%88%E9%9D%9E%E5%A0%86%E7%A9%BA%E9%97%B4%EF%BC%8C%E4%BD%BF%E7%94%A8%E7%9A%84%E6%98%AF%E6%9C%AC%E5%9C%B0%E5%86%85%E5%AD%98%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">方法区（非堆空间，使用的是本地内存）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JIT%E7%BC%96%E8%AF%91%E5%99%A8%EF%BC%88%E5%B1%9E%E4%BA%8E%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E%EF%BC%89"><span class="nav-number">6.</span> <span class="nav-text">JIT编译器（属于执行引擎）</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -336,7 +401,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-count">10</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
