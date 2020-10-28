@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ymaster1.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="平时开发到时候可能会遇到需要将数据导出到excel中，或者从excel中读取数据进行批量操作，这时候我们可以使用appache的poi来进行操作，也可以使用阿里巴巴的easyexcel来操作，这里以后者为例进行介绍">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring boot 导出数据到execl">
+<meta property="og:url" content="https://ymaster1.github.io/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/index.html">
+<meta property="og:site_name" content="ymaster1&#39;s blog">
+<meta property="og:description" content="平时开发到时候可能会遇到需要将数据导出到excel中，或者从excel中读取数据进行批量操作，这时候我们可以使用appache的poi来进行操作，也可以使用阿里巴巴的easyexcel来操作，这里以后者为例进行介绍">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ymaster1.github.io/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/数据库记录.png">
+<meta property="og:image" content="https://ymaster1.github.io/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/postman导出.png">
+<meta property="og:image" content="https://ymaster1.github.io/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/导出xlsx.png">
+<meta property="og:image" content="https://ymaster1.github.io/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/导入xlsx.png">
+<meta property="article:published_time" content="2020-10-26T09:16:34.000Z">
+<meta property="article:modified_time" content="2020-10-28T02:08:59.935Z">
+<meta property="article:author" content="ymaster1">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ymaster1.github.io/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/数据库记录.png">
+
+<link rel="canonical" href="https://ymaster1.github.io/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>spring boot 导出数据到execl | ymaster1's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">ymaster1's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">人之所恶在好为人师，不知实，谨慎言</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">3</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">3</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">12</span></a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/ymaster1" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://ymaster1.github.io/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/timg.jpg">
+      <meta itemprop="name" content="ymaster1">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ymaster1's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          spring boot 导出数据到execl
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-10-26 17:16:34" itemprop="dateCreated datePublished" datetime="2020-10-26T17:16:34+08:00">2020-10-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-10-28 10:08:59" itemprop="dateModified" datetime="2020-10-28T10:08:59+08:00">2020-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/springboot/" itemprop="url" rel="index"><span itemprop="name">springboot</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">平时开发到时候可能会遇到需要将数据导出到excel中，或者从excel中读取数据进行批量操作，这时候我们可以使用appache的poi来进行操作，也可以使用阿里巴巴的easyexcel来操作，这里以后者为例进行介绍</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>​    首先我们需要在项目中导入maven依赖，</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.alibaba<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>easyexcel<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.1.2-beta5<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后我们需要新建一个类用于和excel各字段相互对应，叫做模板，并且该类要继承自<code>com.alibaba.excel.metadata.BaseRowModel</code>.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserImportVo</span> <span class="keyword">extends</span> <span class="title">BaseRowModel</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 用户名</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExcelProperty(value = &quot;用户名&quot;,index = 0)</span></span><br><span class="line">    <span class="keyword">private</span> String userName;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 地址</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExcelProperty(value = &quot;地址&quot;,index = 1)</span></span><br><span class="line">    <span class="keyword">private</span> String adder;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 性别</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExcelProperty(value = &quot;性别&quot;,index = 2)</span></span><br><span class="line">    <span class="keyword">private</span> Integer sex;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 城市</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@ExcelProperty(value = &quot;城市&quot;,index = 3)</span></span><br><span class="line">    <span class="keyword">private</span> String city;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>每个字段上都需要加上<code>@ExcelProperty</code>注解，其中value属性表示execl中的列名称，index表示excel中的列号，下标从0开始。而且像这种方法应该以工具类的形式提供出来给各业务使用</p>
+<h2 id="导出"><a href="#导出" class="headerlink" title="导出"></a>导出</h2><h3 id="单sheet导出"><a href="#单sheet导出" class="headerlink" title="单sheet导出"></a>单sheet导出</h3><p>​    实际运用中单sheet导出是最常见的场景，就是将一个列表的数据导出到一个excel中，并且只有一个sheet，工具类方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">writeExcel</span><span class="params">(HttpServletResponse response, List&lt;? extends BaseRowModel&gt; list, String fileName,</span></span></span><br><span class="line"><span class="function"><span class="params">                                  String sheetName, BaseRowModel object)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        OutputStream out = getOutputStream(fileName, response);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            ExcelWriter writer = <span class="keyword">new</span> ExcelWriter(out, ExcelTypeEnum.XLSX);</span><br><span class="line">            <span class="comment">// 写仅有一个 Sheet 的 Excel 文件, 此场景较为通用</span></span><br><span class="line">            Sheet sheet = <span class="keyword">new</span> Sheet(<span class="number">1</span>, <span class="number">0</span>, object.getClass());</span><br><span class="line">            <span class="comment">// 第一个 sheet 名称</span></span><br><span class="line">            sheet.setSheetName(sheetName);</span><br><span class="line">            writer.write(list, sheet);</span><br><span class="line">            writer.finish();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                out.close();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 导出文件时为Writer生成OutputStream</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> OutputStream <span class="title">getOutputStream</span><span class="params">(String fileName, HttpServletResponse response)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="comment">//创建本地文件</span></span><br><span class="line">        fileName = fileName + ExcelTypeEnum.XLSX.getValue();</span><br><span class="line">        File dbfFile = <span class="keyword">new</span> File(fileName);</span><br><span class="line">        <span class="keyword">if</span> (!dbfFile.exists() || dbfFile.isDirectory()) &#123;</span><br><span class="line">            dbfFile.createNewFile();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            fileName = <span class="keyword">new</span> String(fileName.getBytes(), <span class="string">&quot;ISO-8859-1&quot;</span>);</span><br><span class="line"><span class="comment">//            文件下载头</span></span><br><span class="line">            response.addHeader(<span class="string">&quot;Content-Disposition&quot;</span>, <span class="string">&quot;filename=&quot;</span> + fileName);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> response.getOutputStream();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BusinessException(<span class="string">&quot;导出异常！&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>业务类调用，只需传入文件名称，路径等参数即可</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">String sheetName = <span class="string">&quot;监测数据&quot;</span>;</span><br><span class="line">        String fileName = sheetName + LocalDateTime.now().format(DateTimeFormatter.ofPattern(<span class="string">&quot;yyyy-MM-dd HH:mm:ss&quot;</span>));</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//list为自己业务查出来的业务数据，数据泛型class必须继承BaseRowModel</span></span><br><span class="line">            <span class="comment">//response为传进来的HttpServletResponse</span></span><br><span class="line">            ExcelUtils.writeExcel(response, list, fileName, sheetName, MonitorDataImportDTO.builder().build());</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;导出异常: &#123;&#125;&quot;</span>, e.getMessage());</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>到此我们就实现了一个完整的单sheet导出功能。</p>
+<p>当然我们也可以直接导入到指定路径</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//        OutputStream out = getOutputStream(fileName, response);</span></span><br><span class="line">        OutputStream out =  <span class="keyword">new</span> FileOutputStream(<span class="string">&quot;D:\\test.xlsx&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="多sheet导出"><a href="#多sheet导出" class="headerlink" title="多sheet导出"></a>多sheet导出</h3><h2 id="导入"><a href="#导入" class="headerlink" title="导入"></a>导入</h2><h3 id="单sheet导入"><a href="#单sheet导入" class="headerlink" title="单sheet导入"></a>单sheet导入</h3><p>​    有时候我们也需要直接从excel中批量导入数据，同时对每条数据进行校验等等，将不符合要求的数据排除</p>
+<p>​    对于读取数据，我们首先需要新建一个监听类，会对每一行的读取内容进行监听，继承自<code>com.alibaba.excel.event.AnalysisEventListener</code>,并实现其中的两个方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExcelListener</span>&lt;<span class="title">T</span>&gt; <span class="keyword">extends</span> <span class="title">AnalysisEventListener</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/**自定义用于暂时存储data。</span></span><br><span class="line"><span class="comment">     * 可以通过实例获取该值</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;T&gt; data = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 通过 AnalysisContext 对象还可以获取当前 sheet，当前行等数据</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">invoke</span><span class="params">(T object, AnalysisContext context)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//数据存储到list，供批量处理，或后续自己业务逻辑处理。</span></span><br><span class="line">        data.add(object);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doAfterAllAnalysed</span><span class="params">(AnalysisContext context)</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> List&lt;T&gt; <span class="title">getDatas</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> data;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后再前面的工具类中加上新的读取单sheet方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 读取某个 sheet 的 Excel</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> excel       文件</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> clazz       实体类映射，继承 BaseRowModel 类</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> sheetNo     sheet 的序号 从1开始</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> headLineNum 表头行数，默认为1</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> Excel 数据 list</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> &lt;T extends BaseRowModel&gt; <span class="function">List&lt;T&gt; <span class="title">readExcel</span><span class="params">(MultipartFile excel, Class&lt;T&gt; clazz, <span class="keyword">int</span> sheetNo, <span class="keyword">int</span> headLineNum)</span> </span>&#123;</span><br><span class="line">        ExcelListener&lt;T&gt; excelListener = <span class="keyword">new</span> ExcelListener();</span><br><span class="line">        ExcelReader reader = getReader(excel, excelListener);</span><br><span class="line">        <span class="keyword">if</span> (reader == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        &#125;</span><br><span class="line">        Sheet sheet = <span class="keyword">new</span> Sheet(sheetNo);</span><br><span class="line">        sheet.setClazz(clazz);</span><br><span class="line">        reader.read(sheet);</span><br><span class="line">        sheet.setHeadLineMun(headLineNum);</span><br><span class="line">        <span class="keyword">return</span> excelListener.getDatas();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 返回 ExcelReader</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> excel         需要解析的 Excel 文件</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> excelListener new ExcelListener()</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> ExcelReader <span class="title">getReader</span><span class="params">(MultipartFile excel, ExcelListener excelListener)</span> </span>&#123;</span><br><span class="line">        String filename = excel.getOriginalFilename();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (filename == <span class="keyword">null</span> || (!filename.toLowerCase().endsWith(<span class="string">&quot;.xls&quot;</span>) &amp;&amp; !filename.toLowerCase().endsWith(<span class="string">&quot;.xlsx&quot;</span>))) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> MyException(<span class="string">&quot;文件格式错误！&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        InputStream inputStream;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            inputStream = <span class="keyword">new</span> BufferedInputStream(excel.getInputStream());</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> ExcelReader(inputStream, <span class="keyword">null</span>, excelListener, <span class="keyword">false</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样我们就完成了对一个单sheet的excel进行读取，但是如果我们想在读取的时候对每一条数据进行校验，并记录成功数和失败数以及失败原因的话，还需要进一步完善。如果仅仅是导入数据，不做校验或者最后统一再做校验的话，到这里就结束了。</p>
+<p>​    首先我们需要新建一个基类用于记录失败数和成功数</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ImportResponse</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    List&lt;T&gt; list;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 导入总记录数</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer totalCount;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 导入错误数</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer errorCount;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 成功数</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Integer successCount;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后还需要一个记录每条数据失败原因的基类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ImportRowInfo</span> <span class="keyword">extends</span> <span class="title">BaseRowModel</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 错误信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String errorInfo;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 导入状态</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> importStatus;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后我们需要提供一个带有抽象方法（用于不同业务分别做校验，由各子类去实现）的工具类，重新提供导入文件的方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ImportAbstractService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 导入文件</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> file</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> tClass</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> &lt;T extends ImportRowInfo&gt; <span class="function">ImportResponse&lt;T&gt; <span class="title">importFile</span><span class="params">(MultipartFile file, Class&lt;T&gt; tClass)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> importFile(file, tClass, <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 导入文件</span></span><br><span class="line"><span class="comment">     * 使用前面提供的导入方法</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> file</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> tClass</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> sheetNo</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> &lt;T extends ImportRowInfo&gt; <span class="function">ImportResponse&lt;T&gt; <span class="title">importFile</span><span class="params">(MultipartFile file, Class&lt;T&gt; tClass, <span class="keyword">int</span> sheetNo)</span> </span>&#123;</span><br><span class="line">        log.info(<span class="string">&quot;import file fileSize:&#123;&#125;, name:&#123;&#125;&quot;</span>, file.getSize(), file.getName());</span><br><span class="line">        List all = ExcelUtil.readExcel(file, tClass, sheetNo);</span><br><span class="line">        <span class="keyword">return</span> validAllData(all);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 验证所有数据</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> all</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> &lt;T&gt;</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> &lt;T extends ImportRowInfo&gt; <span class="function">ImportResponse&lt;T&gt; <span class="title">validAllData</span><span class="params">(List&lt;T&gt; all)</span> </span>&#123;</span><br><span class="line">        AtomicInteger totalCount = <span class="keyword">new</span> AtomicInteger(<span class="number">0</span>);</span><br><span class="line">        AtomicInteger errorCount = <span class="keyword">new</span> AtomicInteger(<span class="number">0</span>);</span><br><span class="line">        AtomicInteger successCount = <span class="keyword">new</span> AtomicInteger(<span class="number">0</span>);</span><br><span class="line">        <span class="comment">//验证导入数据</span></span><br><span class="line">        validData(all, totalCount, errorCount, successCount);</span><br><span class="line"></span><br><span class="line">        ImportResponse response = <span class="keyword">new</span> ImportResponse();</span><br><span class="line">        response.setErrorCount(errorCount.get());</span><br><span class="line">        response.setSuccessCount(successCount.get());</span><br><span class="line">        response.setTotalCount(totalCount.get());</span><br><span class="line">        response.setList(all);</span><br><span class="line">        log.info(<span class="string">&quot;读入数据size: &#123;&#125;&quot;</span>, all.size());</span><br><span class="line">        <span class="keyword">return</span> response;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 验证导入数据</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> list</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> totalCount</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> errorCount</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> successCount</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> &lt;T extends ImportRowInfo&gt; <span class="function"><span class="keyword">void</span> <span class="title">validData</span><span class="params">(List&lt;T&gt; list, AtomicInteger totalCount,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                    AtomicInteger errorCount, AtomicInteger successCount)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> totalLine = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> errorLine = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> successLine = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (list != <span class="keyword">null</span> &amp;&amp; list.size() &gt; <span class="number">501</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> MyException(<span class="string">&quot;超过最大条数500&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (ImportRowInfo mar : list) &#123;</span><br><span class="line">            totalLine++;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                mar.setErrorInfo(<span class="string">&quot;&quot;</span>);</span><br><span class="line">                mar.setImportStatus(<span class="keyword">true</span>);</span><br><span class="line">                validRow(mar);</span><br><span class="line">                successLine++;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                mar.setErrorInfo(e.getMessage());</span><br><span class="line">                mar.setImportStatus(<span class="keyword">false</span>);</span><br><span class="line">                errorLine++;</span><br><span class="line">                log.info(<span class="string">&quot;&quot;</span>, e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//设置计数</span></span><br><span class="line">        totalCount.set(totalLine);</span><br><span class="line">        errorCount.set(errorLine);</span><br><span class="line">        successCount.set(successLine);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 单行excle 数据验证</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> rowInfo</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">validRow</span><span class="params">(T rowInfo)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到实际还是使用了前面提供的easyexcel单sheet导入的方法，只不过在导入后对读取到的数据进行了一次校验，这样做的好处就是可以让前端在导入的时候明确的知道每一条数据导入成功与否，以及他失败的原因，校验方法是由具体的子类去实现的。</p>
+<p>​    这里我将前面UserImportVo让他重新继承ImportRowInfo，由于ImportRowInfo也是继承自BaseRowModel，所以没什么区别。然后先测试导出功能，然后测试导出</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">importData</span><span class="params">(HttpServletResponse response)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        UserInfo info = <span class="keyword">new</span> UserInfo();</span><br><span class="line">        info.setCity(<span class="string">&quot;达州&quot;</span>);</span><br><span class="line">        List&lt;UserInfo&gt; select = userInfoMapper.select(info);</span><br><span class="line">        List&lt;UserImportVo&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        select.forEach(e-&gt;&#123;</span><br><span class="line">            UserImportVo vo = <span class="keyword">new</span> UserImportVo();</span><br><span class="line">            BeanUtils.copyProperties(e, vo);</span><br><span class="line">            list.add(vo);</span><br><span class="line">        &#125;);</span><br><span class="line"><span class="comment">// 导出查询出来的数据</span></span><br><span class="line">        ExcelUtil.writeExcel(response,list,<span class="string">&quot;ymaster1&quot;</span>,<span class="string">&quot;ymaster1&quot;</span>,<span class="keyword">new</span> UserImportVo());</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里我查询所有city为达州的记录，然后为了更直观的展示，我修改了outPutStream，直接下载到指定位置，其他的不变。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//        OutputStream out = getOutputStream(fileName, response);</span></span><br><span class="line">        OutputStream out = <span class="keyword">new</span> FileOutputStream(<span class="string">&quot;D:\\ymaster1.xlsx&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>先看数据库记录</p>
+<img src="/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/数据库记录.png" alt="数据库记录" style="zoom:50%;">
+
+<p>一共有5条数据，然后通过postman发送请求，调用该方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@PostMapping(&quot;/importLine&quot;)</span></span><br><span class="line">   <span class="function">Response&lt;Boolean&gt; <span class="title">importLine</span><span class="params">(HttpServletResponse response)</span> <span class="keyword">throws</span> IOException</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> Response&lt;Boolean&gt; <span class="title">importLine</span><span class="params">(HttpServletResponse response)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">       <span class="keyword">return</span> Response.success(userInfoService.importData(response));</span><br><span class="line">   &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<img src="/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/postman导出.png" alt="postman导出" style="zoom:50%;">
+
+<p>再看D盘文件，已经有了该.xlsx，说明导出成功。然后看其中的数据也是和从数据库中查出来的结果一样。</p>
+<img src="/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/导出xlsx.png" alt="导出xlsx" style="zoom:50%;">
+
+<p>然后测试导入并校验。</p>
+<p>我们先将前两条数据的性别设置为0，然后进行导入，并对每一条数据进行校验，如果性别为0就不能导入并提示错误。</p>
+<img src="/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/导入xlsx.png" alt="导入xlsx" style="zoom:50%;">
+
+<p>然后需要让原来的接口继承我们的验证工具类，主要是为了实现他的验证方法，如果不需要验证则可以不实现该抽象方法，或者可以不继承这个类，直接用最开始写的easyexcel导入方法即可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserInfoServiceImpl</span> <span class="keyword">extends</span> <span class="title">ImportAbstractService</span> <span class="keyword">implements</span> <span class="title">UserInfoService</span></span></span><br></pre></td></tr></table></figure>
+
+<p>然后调用里面的import方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> ImportResponse&lt;UserImportVo&gt; <span class="title">importIn</span><span class="params">(MultipartFile file)</span> </span>&#123;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">this</span>.importFile(file, UserImportVo.class);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后实现那个 验证方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">validRow</span><span class="params">(ImportRowInfo rowInfo)</span> </span>&#123;</span><br><span class="line">        UserImportVo vo = (UserImportVo) rowInfo;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (vo.getSex() != <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> MyException(<span class="string">&quot;人家不是女生！&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意这里如果不满足验证条件一定要往外抛异常，因为在默认实现里面是catch到了异常才会对数量和错误信息进行修改。</p>
+<p>最后通过postman调用该接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@PostMapping(&quot;/importIn&quot;)</span></span><br><span class="line">   Response&lt;ImportResponse&lt;UserImportVo&gt;&gt; importIn(MultipartFile file) <span class="keyword">throws</span> IOException;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="keyword">public</span> Response&lt;ImportResponse&lt;UserImportVo&gt;&gt; importIn(MultipartFile file) <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">       <span class="keyword">return</span> Response.success(userInfoService.importIn(file));</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;msg&quot;: &quot;成功!&quot;,</span><br><span class="line">    &quot;code&quot;: &quot;200&quot;,</span><br><span class="line">    &quot;data&quot;: &#123;</span><br><span class="line">        &quot;list&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;errorInfo&quot;: &quot;人家不是女生！&quot;,</span><br><span class="line">                &quot;importStatus&quot;: false,</span><br><span class="line">                &quot;userName&quot;: &quot;ymaster4&quot;,</span><br><span class="line">                &quot;adder&quot;: &quot;达州&quot;,</span><br><span class="line">                &quot;sex&quot;: 0,</span><br><span class="line">                &quot;city&quot;: &quot;达州&quot;</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;errorInfo&quot;: &quot;人家不是女生！&quot;,</span><br><span class="line">                &quot;importStatus&quot;: false,</span><br><span class="line">                &quot;userName&quot;: &quot;ymaster2&quot;,</span><br><span class="line">                &quot;adder&quot;: &quot;达州&quot;,</span><br><span class="line">                &quot;sex&quot;: 0,</span><br><span class="line">                &quot;city&quot;: &quot;达州&quot;</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;errorInfo&quot;: &quot;&quot;,</span><br><span class="line">                &quot;importStatus&quot;: true,</span><br><span class="line">                &quot;userName&quot;: &quot;ymaster3&quot;,</span><br><span class="line">                &quot;adder&quot;: &quot;达州&quot;,</span><br><span class="line">                &quot;sex&quot;: 1,</span><br><span class="line">                &quot;city&quot;: &quot;达州&quot;</span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;errorInfo&quot;: &quot;&quot;,</span><br><span class="line">                &quot;importStatus&quot;: true,</span><br><span class="line">                &quot;userName&quot;: &quot;ymaster1&quot;,</span><br><span class="line">                &quot;adder&quot;: &quot;达州&quot;,</span><br><span class="line">                &quot;sex&quot;: 1,</span><br><span class="line">                &quot;city&quot;: &quot;达州&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        ],</span><br><span class="line">        &quot;totalCount&quot;: 4,</span><br><span class="line">        &quot;errorCount&quot;: 2,</span><br><span class="line">        &quot;successCount&quot;: 2</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到我们只有两条成功，还有两条是失败的，说明验证成功。</p>
+<h2 id="POI"><a href="#POI" class="headerlink" title="POI"></a>POI</h2><h3 id="HSSF"><a href="#HSSF" class="headerlink" title="HSSF"></a>HSSF</h3><p>​    操作03版excel,有行数限制，65536行，后缀xls</p>
+<h3 id="XSSF"><a href="#XSSF" class="headerlink" title="XSSF"></a>XSSF</h3><p>​    07版excel,没有行数限制,后缀xlsx</p>
+<h3 id="文件对象，即工作簿"><a href="#文件对象，即工作簿" class="headerlink" title="文件对象，即工作簿"></a>文件对象，即工作簿</h3><h3 id="sheet对象即工作表"><a href="#sheet对象即工作表" class="headerlink" title="sheet对象即工作表"></a>sheet对象即工作表</h3><h3 id="行对象"><a href="#行对象" class="headerlink" title="行对象"></a>行对象</h3><h3 id="列对象"><a href="#列对象" class="headerlink" title="列对象"></a>列对象</h3><h3 id="单元格对象"><a href="#单元格对象" class="headerlink" title="单元格对象"></a>单元格对象</h3>
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ymaster1
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ymaster1.github.io/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/" title="spring boot 导出数据到execl">https://ymaster1.github.io/2020/10/26/spring-boot-导出数据到execl/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/26/%E5%88%9D%E8%AF%86kafka/" rel="prev" title="初识kafka">
+      <i class="fa fa-chevron-left"></i> 初识kafka
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BC%E5%87%BA"><span class="nav-number">1.</span> <span class="nav-text">导出</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95sheet%E5%AF%BC%E5%87%BA"><span class="nav-number">1.1.</span> <span class="nav-text">单sheet导出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9Asheet%E5%AF%BC%E5%87%BA"><span class="nav-number">1.2.</span> <span class="nav-text">多sheet导出</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5"><span class="nav-number">2.</span> <span class="nav-text">导入</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95sheet%E5%AF%BC%E5%85%A5"><span class="nav-number">2.1.</span> <span class="nav-text">单sheet导入</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#POI"><span class="nav-number">3.</span> <span class="nav-text">POI</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HSSF"><span class="nav-number">3.1.</span> <span class="nav-text">HSSF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#XSSF"><span class="nav-number">3.2.</span> <span class="nav-text">XSSF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E5%AF%B9%E8%B1%A1%EF%BC%8C%E5%8D%B3%E5%B7%A5%E4%BD%9C%E7%B0%BF"><span class="nav-number">3.3.</span> <span class="nav-text">文件对象，即工作簿</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sheet%E5%AF%B9%E8%B1%A1%E5%8D%B3%E5%B7%A5%E4%BD%9C%E8%A1%A8"><span class="nav-number">3.4.</span> <span class="nav-text">sheet对象即工作表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%8C%E5%AF%B9%E8%B1%A1"><span class="nav-number">3.5.</span> <span class="nav-text">行对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%AF%B9%E8%B1%A1"><span class="nav-number">3.6.</span> <span class="nav-text">列对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E5%85%83%E6%A0%BC%E5%AF%B9%E8%B1%A1"><span class="nav-number">3.7.</span> <span class="nav-text">单元格对象</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ymaster1"
+      src="/images/timg.jpg">
+  <p class="site-author-name" itemprop="name">ymaster1</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ymaster1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;ymaster1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ymaster1@163.com" title="E-Mail → mailto:ymaster1@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">余明</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

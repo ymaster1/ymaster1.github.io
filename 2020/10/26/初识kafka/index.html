@@ -20,17 +20,23 @@
     var CONFIG = {"hostname":"ymaster1.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="article">
-<meta property="og:title" content="jvm性能监控">
-<meta property="og:url" content="https://ymaster1.github.io/2020/10/21/jvm%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/index.html">
+  <meta name="description" content="kafka是一个基于发布订阅模式的消息中间件，主要适用场景有日志系统，消息系统等，本篇主要先介绍一下kafka的相关概念和特性，后续会结合工作实践介绍其实际运用。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初识kafka">
+<meta property="og:url" content="https://ymaster1.github.io/2020/10/26/%E5%88%9D%E8%AF%86kafka/index.html">
 <meta property="og:site_name" content="ymaster1&#39;s blog">
+<meta property="og:description" content="kafka是一个基于发布订阅模式的消息中间件，主要适用场景有日志系统，消息系统等，本篇主要先介绍一下kafka的相关概念和特性，后续会结合工作实践介绍其实际运用。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2020-10-20T16:00:25.000Z">
-<meta property="article:modified_time" content="2020-10-20T16:00:25.481Z">
+<meta property="og:image" content="https://ymaster1.github.io/2020/10/26/%E5%88%9D%E8%AF%86kafka/kafka架构.png">
+<meta property="og:image" content="https://ymaster1.github.io/2020/10/26/%E5%88%9D%E8%AF%86kafka/分区和消费者.png">
+<meta property="article:published_time" content="2020-10-26T02:55:54.000Z">
+<meta property="article:modified_time" content="2020-10-26T06:43:24.821Z">
 <meta property="article:author" content="ymaster1">
+<meta property="article:tag" content="消息队列">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ymaster1.github.io/2020/10/26/%E5%88%9D%E8%AF%86kafka/kafka架构.png">
 
-<link rel="canonical" href="https://ymaster1.github.io/2020/10/21/jvm%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">
+<link rel="canonical" href="https://ymaster1.github.io/2020/10/26/%E5%88%9D%E8%AF%86kafka/">
 
 
 <script id="page-configurations">
@@ -43,7 +49,7 @@
   };
 </script>
 
-  <title>jvm性能监控 | ymaster1's blog</title>
+  <title>初识kafka | ymaster1's blog</title>
   
 
 
@@ -171,7 +177,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://ymaster1.github.io/2020/10/21/jvm%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/">
+    <link itemprop="mainEntityOfPage" href="https://ymaster1.github.io/2020/10/26/%E5%88%9D%E8%AF%86kafka/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/timg.jpg">
@@ -184,7 +190,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          jvm性能监控
+          初识kafka
         </h1>
 
         <div class="post-meta">
@@ -193,11 +199,22 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2020-10-21 00:00:25" itemprop="dateCreated datePublished" datetime="2020-10-21T00:00:25+08:00">2020-10-21</time>
+              <time title="创建时间：2020-10-26 10:55:54 / 修改时间：14:43:24" itemprop="dateCreated datePublished" datetime="2020-10-26T10:55:54+08:00">2020-10-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/kafka/" itemprop="url" rel="index"><span itemprop="name">kafka</span></a>
+                </span>
             </span>
 
           
+            <div class="post-description">kafka是一个基于发布订阅模式的消息中间件，主要适用场景有日志系统，消息系统等，本篇主要先介绍一下kafka的相关概念和特性，后续会结合工作实践介绍其实际运用。</div>
 
         </div>
       </header>
@@ -208,7 +225,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <h2 id="kafka的组成"><a href="#kafka的组成" class="headerlink" title="kafka的组成"></a>kafka的组成</h2><p>​    在kafka的设计里面，消息生产者被称为<code>producer</code>,消息消费者被称为<code>comsumer</code>,同时生产者和消费组并没有强关联，而是通过一个个的kafka服务器实例来进行间接关联，一个<strong>kafka实例</strong>被称为一个broker,而在实际生产者中kafka一般是以集群的方式部署，即会有多个broker，这些broker可以位于统一台物理机也可以位于不同物理机，</p>
+<h3 id="partition-topic-replication"><a href="#partition-topic-replication" class="headerlink" title="partition/topic/replication"></a>partition/topic/replication</h3><p>​    为了更好的理解topic的概念，我们可以将其视为一个数据库库中的一张张不同的表，用于区分不同类型的消息，生产者通过向指定topic发送数据，就好比往指定表中写入数据，消费者订阅（监听）指定topic，就能读取其中的消息进行后续处理，想必这样就很好理解topic了。</p>
+<p>​    topic被称为主题，同时，一个主题可以分为多个分区（partition），同一个主题的不同分区可以位于同一台broker，也可以位于不同的broker,相比与topic的抽象，partition才是我们发送的数据真正的去向，同一个topic的消息会被均衡分到不同的分区里，（如果我们的消息是以key-value形式，则默认是以hash(key)%分区数量（只是ISR，不包括OSR），这样相同key的消息都会被发送到同一个分区），当然还有key为null的情况以及按需求自定义分区策略。同时，单个分区都是FIFO，他保证有序，但是要想整个topic的消息有序，就只能定义一个分区。</p>
+<p>​    分区我们了解了它实际就是我们真正存储的消息的地方，但这其实还不够完全正确，kafka为了保证高可用，同时还设计了副本（plication）机制，讲道理他才是真正进行数据读写的地方，一个partition可以有多个副本，同时强制规统一个topic，同一个partition的各个副本必须位于不同的broker以保证高可用，这些副本当中只有一个leader副本用于当前数据的读写，其他都是flower副本，仅作为备份，当leader不可用时，就会借助zookeeper进行选举，定位新的leader。</p>
+<p>一图胜千言：<img src="/2020/10/26/%E5%88%9D%E8%AF%86kafka/kafka架构.png" alt="kafka架构" style="zoom:50%;"></p>
+<h2 id="消费者-消费者组"><a href="#消费者-消费者组" class="headerlink" title="消费者/消费者组"></a>消费者/消费者组</h2><p>​    一个消费者组由至少一个消费者组成，kafka的一大特性是，数据只需写入一次，就可以被多个消费者消费，但是kafka规定，<strong>同一个topic中同一个分区只能被同一个消费者组中的某一个消费者消费</strong>，所以当我们有多个应用需要对同一topic的同一个分区进行消费，只需要建立不同的消费者组即可。</p>
+<p>​    <img src="/2020/10/26/%E5%88%9D%E8%AF%86kafka/分区和消费者.png" alt="分区和消费者" style="zoom:50%;"></p>
+<p>​    一个消费者可以同时订阅至少一个topic，并按照各个分区的消息的生成顺序读取他们（借助偏移量offset），</p>
+<h2 id="一些额外的名词"><a href="#一些额外的名词" class="headerlink" title="一些额外的名词"></a>一些额外的名词</h2><h3 id="偏移量-offset"><a href="#偏移量-offset" class="headerlink" title="偏移量(offset)"></a>偏移量(offset)</h3><p>​    offset在指定分区中是唯一的，用于标识分区中每条消息的位置，在创建消息的时候，kafka会自动添加它，消费者把在每个分区最后最后读取的消息offset保存（zookeeper上），以便消费者重启或者关闭时它的读取状态不会丢失。</p>
+<h2 id="数量问题"><a href="#数量问题" class="headerlink" title="数量问题"></a>数量问题</h2><p>​    </p>
+
     </div>
 
     
@@ -223,7 +250,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://ymaster1.github.io/2020/10/21/jvm%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7/" title="jvm性能监控">https://ymaster1.github.io/2020/10/21/jvm性能监控/</a>
+    <a href="https://ymaster1.github.io/2020/10/26/%E5%88%9D%E8%AF%86kafka/" title="初识kafka">https://ymaster1.github.io/2020/10/26/初识kafka/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -233,6 +260,9 @@
 
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" rel="tag"># 消息队列</a>
+          </div>
 
         
 
@@ -240,12 +270,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/10/20/springBoot%E4%B8%AD%E6%B6%89%E5%8F%8A%E5%88%B0%E7%9A%84spi%E6%9C%BA%E5%88%B6/" rel="prev" title="springBoot中涉及到的spi机制">
-      <i class="fa fa-chevron-left"></i> springBoot中涉及到的spi机制
+    <a href="/2020/10/24/spring%E8%B5%84%E6%BA%90%E5%8A%A0%E8%BD%BD/" rel="prev" title="spring资源加载">
+      <i class="fa fa-chevron-left"></i> spring资源加载
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/10/21/springboot%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B%E6%B1%A0%E4%BD%BF%E7%94%A8/" rel="next" title="springboot中的线程池使用">
-      springboot中的线程池使用 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/10/26/spring-boot-%E5%AF%BC%E5%87%BA%E6%95%B0%E6%8D%AE%E5%88%B0execl/" rel="next" title="spring boot 导出数据到execl">
+      spring boot 导出数据到execl <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -305,6 +335,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#kafka%E7%9A%84%E7%BB%84%E6%88%90"><span class="nav-number">1.</span> <span class="nav-text">kafka的组成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#partition-topic-replication"><span class="nav-number">1.1.</span> <span class="nav-text">partition&#x2F;topic&#x2F;replication</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85-%E6%B6%88%E8%B4%B9%E8%80%85%E7%BB%84"><span class="nav-number">2.</span> <span class="nav-text">消费者&#x2F;消费者组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E9%A2%9D%E5%A4%96%E7%9A%84%E5%90%8D%E8%AF%8D"><span class="nav-number">3.</span> <span class="nav-text">一些额外的名词</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%81%8F%E7%A7%BB%E9%87%8F-offset"><span class="nav-number">3.1.</span> <span class="nav-text">偏移量(offset)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E9%87%8F%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">数量问题</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
