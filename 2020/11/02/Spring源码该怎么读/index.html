@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ymaster1.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="想要阅读spring的源码，首先就需要做一个明确的规划，不能随便找个不认识的class东看看西看看，我以前也是这样看的，但是都后面发现很多看完就忘了，只能有个大概印象，知道什么时候大概会有个什么相关的class会起作用，不能做到完整地认识，所以从这里开始，我准备再读一次，系统的读一次。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring源码该怎么读">
+<meta property="og:url" content="https://ymaster1.github.io/2020/11/02/Spring%E6%BA%90%E7%A0%81%E8%AF%A5%E6%80%8E%E4%B9%88%E8%AF%BB/index.html">
+<meta property="og:site_name" content="ymaster1&#39;s blog">
+<meta property="og:description" content="想要阅读spring的源码，首先就需要做一个明确的规划，不能随便找个不认识的class东看看西看看，我以前也是这样看的，但是都后面发现很多看完就忘了，只能有个大概印象，知道什么时候大概会有个什么相关的class会起作用，不能做到完整地认识，所以从这里开始，我准备再读一次，系统的读一次。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ymaster1.github.io/2020/11/02/Spring%E6%BA%90%E7%A0%81%E8%AF%A5%E6%80%8E%E4%B9%88%E8%AF%BB/springboot中applicationcontext.png">
+<meta property="og:image" content="https://ymaster1.github.io/2020/11/02/Spring%E6%BA%90%E7%A0%81%E8%AF%A5%E6%80%8E%E4%B9%88%E8%AF%BB/spring中的applicationcontext.png">
+<meta property="article:published_time" content="2020-11-02T02:06:11.000Z">
+<meta property="article:modified_time" content="2020-11-03T09:03:26.652Z">
+<meta property="article:author" content="ymaster1">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ymaster1.github.io/2020/11/02/Spring%E6%BA%90%E7%A0%81%E8%AF%A5%E6%80%8E%E4%B9%88%E8%AF%BB/springboot中applicationcontext.png">
+
+<link rel="canonical" href="https://ymaster1.github.io/2020/11/02/Spring%E6%BA%90%E7%A0%81%E8%AF%A5%E6%80%8E%E4%B9%88%E8%AF%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Spring源码该怎么读 | ymaster1's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">ymaster1's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">人之所恶在好为人师，不知实，谨慎言</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">3</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">4</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">17</span></a>
+
+  </li>
+        <li class="menu-item menu-item-commonweal">
+
+    <a href="/404/" rel="section"><i class="fa fa-heartbeat fa-fw"></i>公益 404</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/ymaster1" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://ymaster1.github.io/2020/11/02/Spring%E6%BA%90%E7%A0%81%E8%AF%A5%E6%80%8E%E4%B9%88%E8%AF%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/timg.jpg">
+      <meta itemprop="name" content="ymaster1">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ymaster1's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring源码该怎么读
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-11-02 10:06:11" itemprop="dateCreated datePublished" datetime="2020-11-02T10:06:11+08:00">2020-11-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-11-03 17:03:26" itemprop="dateModified" datetime="2020-11-03T17:03:26+08:00">2020-11-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/spring/" itemprop="url" rel="index"><span itemprop="name">spring</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">想要阅读spring的源码，首先就需要做一个明确的规划，不能随便找个不认识的class东看看西看看，我以前也是这样看的，但是都后面发现很多看完就忘了，只能有个大概印象，知道什么时候大概会有个什么相关的class会起作用，不能做到完整地认识，所以从这里开始，我准备再读一次，系统的读一次。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>​    首先，由于现在很多项目都是基于springboot直接开发，所以很多人看的时候会直接找一个springboot工程去看，这样不是不可以，但是至少我认为，两者还是有一些差距的，至少打开<code>ApplicationContext</code>的继承关系会发现springboot工程里面会多出很多class，而且它里面还有关于容器等的初始化，不太纯。对比一下两个ApplicationContext继承图，很明显springboot要多得多，所以我选择使用一个原生的spring工程。</p>
+<p>springboot</p>
+<img src="/2020/11/02/Spring%E6%BA%90%E7%A0%81%E8%AF%A5%E6%80%8E%E4%B9%88%E8%AF%BB/springboot中applicationcontext.png" alt="springboot中applicationcontext" style="zoom:50%;">
+
+<p>spring</p>
+<img src="/2020/11/02/Spring%E6%BA%90%E7%A0%81%E8%AF%A5%E6%80%8E%E4%B9%88%E8%AF%BB/spring中的applicationcontext.png" alt="spring中的applicationcontext" style="zoom:50%;">
+
+<h2 id="入口"><a href="#入口" class="headerlink" title="入口"></a>入口</h2><p>在使用spring的时候，我们有两种方法可以配置bean,一种是配置文件，还有一种就是注解。两种方式都有对应的实现类，除了bean读取器不一样，其他的都近似相同，这里我选择以xml的方式进行跟进。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ApplicationContext annoTx = <span class="keyword">new</span> AnnotationConfigApplicationContext();</span><br><span class="line">       ApplicationContext xmlTx = <span class="keyword">new</span> ClassPathXmlApplicationContext();</span><br></pre></td></tr></table></figure>
+
+<p>进入构造方法，发现最终都会走到这里</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ClassPathXmlApplicationContext</span><span class="params">(String[] configLocations, <span class="keyword">boolean</span> refresh, <span class="meta">@Nullable</span> ApplicationContext parent)</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(parent);</span><br><span class="line">        <span class="keyword">this</span>.setConfigLocations(configLocations);</span><br><span class="line">    <span class="comment">// true</span></span><br><span class="line">        <span class="keyword">if</span> (refresh) &#123;</span><br><span class="line">            <span class="keyword">this</span>.refresh();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中super方法执行的是父类<code>AbstractApplicationContext</code>的构造方法，这里率先完成了容器的初始化赋值，包括日志，容器存活状态，锁，监听器，资源解析器等。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">AbstractApplicationContext</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.logger = LogFactory.getLog(<span class="keyword">this</span>.getClass());</span><br><span class="line">        <span class="keyword">this</span>.id = ObjectUtils.identityToString(<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">this</span>.displayName = ObjectUtils.identityToString(<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">this</span>.beanFactoryPostProcessors = <span class="keyword">new</span> ArrayList();</span><br><span class="line">        <span class="keyword">this</span>.active = <span class="keyword">new</span> AtomicBoolean();</span><br><span class="line">        <span class="keyword">this</span>.closed = <span class="keyword">new</span> AtomicBoolean();</span><br><span class="line">        <span class="keyword">this</span>.startupShutdownMonitor = <span class="keyword">new</span> Object();</span><br><span class="line">    <span class="comment">//监听器链</span></span><br><span class="line">        <span class="keyword">this</span>.applicationListeners = <span class="keyword">new</span> LinkedHashSet();</span><br><span class="line">    <span class="comment">//资源解析器</span></span><br><span class="line">        <span class="keyword">this</span>.resourcePatternResolver = <span class="keyword">this</span>.getResourcePatternResolver();</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//super指向的构造器</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">AbstractApplicationContext</span><span class="params">(<span class="meta">@Nullable</span> ApplicationContext parent)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>();</span><br><span class="line">        <span class="keyword">this</span>.setParent(parent);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后<code>setConfigLocations()</code>设置传进来的配置文件位置，可以看到其实我们是可以传递多个配置文件，以字符串数组的形式进行传递。</p>
+<p>最后进入refresh()方法，跟进之后会发现这跟super一样依然是在父类<code>AbstractApplicationContext</code>里面实现的方法，所以<code>AbstractApplicationContext</code>这个抽象类实现了大部分ApplicationContext的逻辑。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">refresh</span><span class="params">()</span> <span class="keyword">throws</span> BeansException, IllegalStateException </span>&#123;</span><br><span class="line">		<span class="keyword">synchronized</span> (<span class="keyword">this</span>.startupShutdownMonitor) &#123;</span><br><span class="line">			<span class="comment">// Prepare this context for refreshing.</span></span><br><span class="line">			prepareRefresh();</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Tell the subclass to refresh the internal bean factory.</span></span><br><span class="line">			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();</span><br><span class="line"></span><br><span class="line">			<span class="comment">// Prepare the bean factory for use in this context.</span></span><br><span class="line">			prepareBeanFactory(beanFactory);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">try</span> &#123;</span><br><span class="line">				<span class="comment">// Allows post-processing of the bean factory in context subclasses.</span></span><br><span class="line">				postProcessBeanFactory(beanFactory);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Invoke factory processors registered as beans in the context.</span></span><br><span class="line">				invokeBeanFactoryPostProcessors(beanFactory);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Register bean processors that intercept bean creation.</span></span><br><span class="line">				registerBeanPostProcessors(beanFactory);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Initialize message source for this context.</span></span><br><span class="line">				initMessageSource();</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Initialize event multicaster for this context.</span></span><br><span class="line">				initApplicationEventMulticaster();</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Initialize other special beans in specific context subclasses.</span></span><br><span class="line">				onRefresh();</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Check for listener beans and register them.</span></span><br><span class="line">				registerListeners();</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Instantiate all remaining (non-lazy-init) singletons.</span></span><br><span class="line">				finishBeanFactoryInitialization(beanFactory);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Last step: publish corresponding event.</span></span><br><span class="line">				finishRefresh();</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">catch</span> (BeansException ex) &#123;</span><br><span class="line">				<span class="keyword">if</span> (logger.isWarnEnabled()) &#123;</span><br><span class="line">					logger.warn(<span class="string">&quot;Exception encountered during context initialization - &quot;</span> +</span><br><span class="line">							<span class="string">&quot;cancelling refresh attempt: &quot;</span> + ex);</span><br><span class="line">				&#125;</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Destroy already created singletons to avoid dangling resources.</span></span><br><span class="line">				destroyBeans();</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Reset &#x27;active&#x27; flag.</span></span><br><span class="line">				cancelRefresh(ex);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Propagate exception to caller.</span></span><br><span class="line">				<span class="keyword">throw</span> ex;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">finally</span> &#123;</span><br><span class="line">				<span class="comment">// Reset common introspection caches in Spring&#x27;s core, since we</span></span><br><span class="line">				<span class="comment">// might not ever need metadata for singleton beans anymore...</span></span><br><span class="line">				resetCommonCaches();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="refresh"><a href="#refresh" class="headerlink" title="refresh()"></a>refresh()</h2><p>可以看到执行完这个refresh()方法我们最开始的ClassPathXmlApplicationContext构造器就算是执行完了，然后就可以通过getBean()方法从容器中获取我们在xml里面配置的bean了，所以这个refresh方法才是最核心的角色。可以注意一下，如果只是通过jar包来看源码的话，是没有注释的，所以一般遇到比较核心的class可以直接点击下载源码，这样就会有注释，特别是很多字段，如果没有注释很难知道他是干嘛的</p>
+<h3 id="prepareRefresh"><a href="#prepareRefresh" class="headerlink" title="prepareRefresh()"></a>prepareRefresh()</h3><p>看注释知道这是为刷新准备上下文环境</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Flag that indicates whether this context has been closed already,表示容器的开闭状态</span></span><br><span class="line"><span class="keyword">this</span>.closed.set(<span class="keyword">false</span>);</span><br><span class="line"><span class="comment">//Flag that indicates whether this context is currently active.表示容器当前是否处于活动状态</span></span><br><span class="line"><span class="keyword">this</span>.active.set(<span class="keyword">true</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="obtainFreshBeanFactory"><a href="#obtainFreshBeanFactory" class="headerlink" title="obtainFreshBeanFactory()"></a>obtainFreshBeanFactory()</h3><p>看注释是返回一个BeanFactory实例，所以这里面会先进行BeanFactory的初始化，BeanFactory是所有容器包括ApplicationContext的最顶级接口。<code>ConfigurableListableBeanFactory</code>也是继承自BeanFactory</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * Tell the subclass to refresh the internal bean factory.</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@return</span> the fresh BeanFactory instance</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> #refreshBeanFactory()</span></span><br><span class="line"><span class="comment">	 * <span class="doctag">@see</span> #getBeanFactory()</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="function"><span class="keyword">protected</span> ConfigurableListableBeanFactory <span class="title">obtainFreshBeanFactory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		refreshBeanFactory();</span><br><span class="line">		<span class="keyword">return</span> getBeanFactory();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>进入到refreshBeanFactory方法看到他有两个实现，由于我们的ClassPathXmlApplication是继承自AbstractRefreshableApplicationContext,所以看该实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">refreshBeanFactory</span><span class="params">()</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">    <span class="comment">//先确保beanFactory为null</span></span><br><span class="line">		<span class="keyword">if</span> (hasBeanFactory()) &#123;</span><br><span class="line">			destroyBeans();</span><br><span class="line">			closeBeanFactory();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			DefaultListableBeanFactory beanFactory = createBeanFactory();</span><br><span class="line">			beanFactory.setSerializationId(getId());</span><br><span class="line">			customizeBeanFactory(beanFactory);</span><br><span class="line">			loadBeanDefinitions(beanFactory);</span><br><span class="line">			<span class="keyword">synchronized</span> (<span class="keyword">this</span>.beanFactoryMonitor) &#123;</span><br><span class="line">				<span class="keyword">this</span>.beanFactory = beanFactory;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">catch</span> (IOException ex) &#123;</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> ApplicationContextException(<span class="string">&quot;I/O error parsing bean definition source for &quot;</span> + getDisplayName(), ex);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<p>直接new一个DefaultListableBeanFactory，他是初具雏形的BeanFactory,基本实现了多有简单的容器功能，xmlBeanFacroty就是可以直接使用的容器，它里面就复用了DefaultListableBeanFactory。loadBeanDefinitions便开始读取xml里面的配置，将BeanDefinition注册到容器（就是一个currentHashMap），看AbstractXmlApplicationContext实现，主要用到了BeanDefinitionReader这个接口。除了xml还可有properties的实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">	<span class="comment">// Create a new XmlBeanDefinitionReader for the given BeanFactory.</span></span><br><span class="line">		XmlBeanDefinitionReader beanDefinitionReader = <span class="keyword">new</span> XmlBeanDefinitionReader(beanFactory);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Configure the bean definition reader with this context&#x27;s</span></span><br><span class="line">		<span class="comment">// resource loading environment.</span></span><br><span class="line">		beanDefinitionReader.setEnvironment(<span class="keyword">this</span>.getEnvironment());</span><br><span class="line">		beanDefinitionReader.setResourceLoader(<span class="keyword">this</span>);</span><br><span class="line">		beanDefinitionReader.setEntityResolver(<span class="keyword">new</span> ResourceEntityResolver(<span class="keyword">this</span>));</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Allow a subclass to provide custom initialization of the reader,</span></span><br><span class="line">		<span class="comment">// then proceed with actually loading the bean definitions.</span></span><br><span class="line">		initBeanDefinitionReader(beanDefinitionReader);</span><br><span class="line"><span class="comment">//装载bean原料</span></span><br><span class="line">		loadBeanDefinitions(beanDefinitionReader);</span><br></pre></td></tr></table></figure>
+
+<h3 id="prepareBeanFactory"><a href="#prepareBeanFactory" class="headerlink" title="prepareBeanFactory()"></a>prepareBeanFactory()</h3><p>到上一个方法执行完时，每一个bean的信息包括是否单例，bean名称这些就都已经定义好了并放到了一个map里面，这个方法就是为beanfactory做一些额外的属性设置</p>
+<h3 id="postProcessBeanFactory"><a href="#postProcessBeanFactory" class="headerlink" title="postProcessBeanFactory()"></a>postProcessBeanFactory()</h3><h3 id="invokeBeanFactoryPostProcessors"><a href="#invokeBeanFactoryPostProcessors" class="headerlink" title="invokeBeanFactoryPostProcessors()"></a>invokeBeanFactoryPostProcessors()</h3><h3 id="registerBeanPostProcessors"><a href="#registerBeanPostProcessors" class="headerlink" title="registerBeanPostProcessors()"></a>registerBeanPostProcessors()</h3><h3 id="initMessageSource"><a href="#initMessageSource" class="headerlink" title="initMessageSource()"></a>initMessageSource()</h3><h3 id="initApplicationEventMulticaster"><a href="#initApplicationEventMulticaster" class="headerlink" title="initApplicationEventMulticaster()"></a>initApplicationEventMulticaster()</h3><h3 id="onRefresh"><a href="#onRefresh" class="headerlink" title="onRefresh()"></a>onRefresh()</h3><h3 id="registerListeners"><a href="#registerListeners" class="headerlink" title="registerListeners()"></a>registerListeners()</h3><h3 id="finishBeanFactoryInitialization"><a href="#finishBeanFactoryInitialization" class="headerlink" title="finishBeanFactoryInitialization()"></a>finishBeanFactoryInitialization()</h3><h3 id="finishRefresh"><a href="#finishRefresh" class="headerlink" title="finishRefresh()"></a>finishRefresh()</h3>
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ymaster1
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ymaster1.github.io/2020/11/02/Spring%E6%BA%90%E7%A0%81%E8%AF%A5%E6%80%8E%E4%B9%88%E8%AF%BB/" title="Spring源码该怎么读">https://ymaster1.github.io/2020/11/02/Spring源码该怎么读/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/10/30/%E6%8B%92%E7%BB%9D%E5%AD%97%E6%AE%B5%E4%B8%8A%E5%8A%A0%E6%AD%A3%E5%88%99%EF%BC%8C%E8%87%AA%E5%AE%9A%E4%B9%89%E4%B8%80%E4%B8%AA%E6%B3%A8%E8%A7%A3%E8%BF%9B%E8%A1%8C%E6%A0%A1%E9%AA%8C/" rel="prev" title="拒绝字段上加正则，自定义一个注解进行校验">
+      <i class="fa fa-chevron-left"></i> 拒绝字段上加正则，自定义一个注解进行校验
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/11/03/spring%E5%AE%B9%E5%99%A8%E8%BE%85%E5%8A%A9-XmlBeanDefinitionReader/" rel="next" title="spring容器辅助-XmlBeanDefinitionReader">
+      spring容器辅助-XmlBeanDefinitionReader <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A5%E5%8F%A3"><span class="nav-number">1.</span> <span class="nav-text">入口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#refresh"><span class="nav-number">2.</span> <span class="nav-text">refresh()</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#prepareRefresh"><span class="nav-number">2.1.</span> <span class="nav-text">prepareRefresh()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#obtainFreshBeanFactory"><span class="nav-number">2.2.</span> <span class="nav-text">obtainFreshBeanFactory()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#prepareBeanFactory"><span class="nav-number">2.3.</span> <span class="nav-text">prepareBeanFactory()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#postProcessBeanFactory"><span class="nav-number">2.4.</span> <span class="nav-text">postProcessBeanFactory()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#invokeBeanFactoryPostProcessors"><span class="nav-number">2.5.</span> <span class="nav-text">invokeBeanFactoryPostProcessors()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#registerBeanPostProcessors"><span class="nav-number">2.6.</span> <span class="nav-text">registerBeanPostProcessors()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#initMessageSource"><span class="nav-number">2.7.</span> <span class="nav-text">initMessageSource()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#initApplicationEventMulticaster"><span class="nav-number">2.8.</span> <span class="nav-text">initApplicationEventMulticaster()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#onRefresh"><span class="nav-number">2.9.</span> <span class="nav-text">onRefresh()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#registerListeners"><span class="nav-number">2.10.</span> <span class="nav-text">registerListeners()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#finishBeanFactoryInitialization"><span class="nav-number">2.11.</span> <span class="nav-text">finishBeanFactoryInitialization()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#finishRefresh"><span class="nav-number">2.12.</span> <span class="nav-text">finishRefresh()</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ymaster1"
+      src="/images/timg.jpg">
+  <p class="site-author-name" itemprop="name">ymaster1</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ymaster1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;ymaster1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ymaster1@163.com" title="E-Mail → mailto:ymaster1@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">余明</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
