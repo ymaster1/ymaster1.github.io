@@ -121,7 +121,7 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">4</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">5</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
@@ -246,7 +246,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2020/12/23/gradle/" class="post-title-link" itemprop="url">未命名</a>
+            <a href="/2020/12/23/gradle/" class="post-title-link" itemprop="url">gradle</a>
         </h2>
 
         <div class="post-meta">
@@ -257,7 +257,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-12-23 14:56:42 / 修改时间：14:57:27" itemprop="dateCreated datePublished" datetime="2020-12-23T14:56:42+08:00">2020-12-23</time>
+              <time title="创建时间：2020-12-23 15:01:17 / 修改时间：15:02:40" itemprop="dateCreated datePublished" datetime="2020-12-23T15:01:17+08:00">2020-12-23</time>
             </span>
 
           
@@ -271,116 +271,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><ul>
-<li>下载bin（二进制）压缩包，解压到指定路径，copy该路径</li>
-<li>新建系统环境变量<code>GRADLE_HOME</code>，路径就是刚copy的那个</li>
-<li>新建PATH变量，<code>%GRADLE_HOME%\bin</code></li>
-</ul>
-<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><ul>
-<li>cmd 输入 gradle -v</li>
-</ul>
-<h3 id="build-gradle"><a href="#build-gradle" class="headerlink" title="build.gradle"></a>build.gradle</h3><p>​    该文件就是gradle的构建文件，类似maven的pom.xml，这个文件为一个构建脚本，这个脚本定义了一个模块和编译用的tasks，它一般是放在项目的模块中，也可以放在项目的根目录用来作为编译结构全局设置，它是必须的</p>
-<ul>
-<li><p>新建一个文件夹，在该文件夹下新建一个build.gradle文件</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">task</span> hello &#123;</span><br><span class="line">    <span class="keyword">doLast</span> &#123;</span><br><span class="line">        <span class="keyword">println</span> <span class="string">&#x27;Hello world!&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>然后cmd进入当前文件夹目录，执行<code>gradle hello</code>,表示执行名为hello的task,就会输出hello world</p>
-</li>
-<li><p>继续编辑</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">task</span> hello &#123;</span><br><span class="line">    <span class="keyword">doLast</span> &#123;</span><br><span class="line">        <span class="keyword">println</span> <span class="string">&#x27;Hello world!&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">task</span> hi &#123;</span><br><span class="line">    <span class="comment">// 表示依赖task hello,执行hi的时候会先执行hello</span></span><br><span class="line">    dependsOn hello</span><br><span class="line">    <span class="keyword">doLast</span> &#123;</span><br><span class="line">        <span class="keyword">println</span> <span class="string">&#x27;Hi world!&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>执行<code>gradle hi</code>就会先输出hello world,再输出hi world,这是因为hi里面用了<code>dependsOn</code>,表示hi这个task依赖 hello这个task,所以会先执行hello，如果想要 跳过他，加上<code>-x</code>参数就表示忽略任务，执行<code>gradle hi -x hello</code>，就只会输出hi world。</p>
-</li>
-<li><p><code>doLast</code> 是gradle提供访问task任务的一个API，类似的还有 <code>doFirst</code>，当一个task被执行的时候，可以通过 <code>doFirst</code> 和 <code>doLast</code> 向task中动态添加操作。<code>doFirst</code> 和 <code>doLast</code> 会在task本身被执行之后才会被执行。例如：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">task</span> hello &#123;</span><br><span class="line"> 	<span class="keyword">println</span> <span class="string">&#x27;Hello ymaster1!&#x27;</span></span><br><span class="line">    <span class="keyword">doLast</span> &#123;</span><br><span class="line">        <span class="keyword">println</span> <span class="string">&#x27;Hello world!&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">doLast</span> &#123;</span><br><span class="line">        <span class="keyword">println</span> <span class="string">&#x27;Hello Mars&#x27;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// task hello &#123;</span></span><br><span class="line"><span class="comment">//     println &#x27;Hello Earth&#x27;</span></span><br><span class="line"><span class="comment">// &#125;</span></span><br><span class="line"></span><br><span class="line">hello.<span class="keyword">doFirst</span> &#123;</span><br><span class="line">    <span class="keyword">println</span> <span class="string">&#x27;Hello Mercury&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line">hello.<span class="keyword">doFirst</span> &#123;</span><br><span class="line">    <span class="keyword">println</span> <span class="string">&#x27;Hello Venus&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>执行结果：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">PS D:\gradleTest&gt; gradle hello</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;</span><span class="bash"> Configure project :</span></span><br><span class="line">Hello ymaster1!</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;</span><span class="bash"> Task :hello</span></span><br><span class="line">Hello Venus</span><br><span class="line">Hello Mercury</span><br><span class="line">Hello world!</span><br><span class="line">Hello Mars</span><br><span class="line"></span><br><span class="line">BUILD SUCCESSFUL in 1s</span><br><span class="line">1 actionable task: 1 executed</span><br></pre></td></tr></table></figure>
-
-<p>doLast和doFirst只是一个函数，他表示在task本身执行完之后再执行，dolast比dofirst后执行，可以写在task外面也可以写在task里面，多个dolast根据先后顺序执行，多个dofirst根据先后顺序<strong>倒序</strong>执行。</p>
-</li>
-</ul>
-<h4 id="buildscript"><a href="#buildscript" class="headerlink" title="buildscript"></a>buildscript</h4><ul>
-<li><p>buildscript里是gradle脚本执行所需依赖，分别是对应的maven库和插件,gradle在执行脚本时，会<strong>优先执行</strong>buildscript代码块中的内容，然后才会执行剩余的build脚本    </p>
-</li>
-<li><p>buildscript中的声明是gradle脚本自身需要使用的资源。可以声明的资源包括依赖项、第三方插件、maven仓库地址等。而在build.gradle文件中直接声明的依赖项、仓库地址等信息是项目<strong>自身需要</strong>的资源。</p>
-</li>
-<li><p>buildscript代码块中的repositories和dependencies的使用方式与直接在build.gradle文件中的使用方式几乎完全一样。唯一不同之处是在buildscript代码块中你可以对dependencies使用classpath声明。该classpath声明说明了在执行其余的build脚本时，class loader可以使用这些你提供的依赖项。这也正是我们使用buildscript代码块的目的,<strong>如果项目要用这个第三方依赖，则还需要再该标签之外再引用一次，两者互不干扰</strong></p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">repositories &#123;</span><br><span class="line">    mavenLocal()</span><br><span class="line">    mavenCentral()</span><br><span class="line">&#125;</span><br><span class="line">//如果项目也需要这个依赖，则需要额外再引用一次</span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile &#x27;org.springframework.ws:spring-ws-core:2.2.0.RELEASE&#x27;,</span><br><span class="line">            &#x27;org.apache.commons:commons-csv:1.0&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">buildscript &#123;</span><br><span class="line">// gradle自身引入依赖使用的maven库</span><br><span class="line">    repositories &#123;</span><br><span class="line">        mavenLocal()</span><br><span class="line">        mavenCentral()</span><br><span class="line">    &#125;</span><br><span class="line">// 把插件和依赖先引用到项目中，供其他插件或Task使用</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath &#x27;org.apache.commons:commons-csv:1.0&#x27;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>简单一点描述就是，gradle的某些插件需要一些额外的依赖才能执行，则需要再buildscript中引入这些依赖（用classpath），但是此时项目中的代码不能使用这些依赖，如果想使用，则需要在外面额外再引入一次，两者互不干扰</strong>。</p>
-</li>
-</ul>
-<h4 id="subprojects"><a href="#subprojects" class="headerlink" title="subprojects"></a>subprojects</h4><p>​    subprojects是对所有child project的配置，排除Root Project，即多模块下只对所有子模块起作用</p>
-<h4 id="allprojects"><a href="#allprojects" class="headerlink" title="allprojects"></a>allprojects</h4><p>​    allprojects是对所有project的配置，包括Root Project，即多模块项目下对多有的模块都起作用</p>
-<ul>
-<li>rootProject  all&gt;sub&gt; child &gt;all &gt;sub</li>
-</ul>
-<p><strong>如果是单模块项目就不需要这些，直接使用denpendencies就行</strong></p>
-<h3 id="setting-gradle"><a href="#setting-gradle" class="headerlink" title="setting.gradle"></a>setting.gradle</h3><p>​    它描述了哪一个模块需要参与构建。每一个多模块的构建都必须在项目结构的根目录中加入这个设置文件，它也是必须的,主要用于多模块项目，作用类似与maven的多model</p>
-<ul>
-<li><p>maven</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.ym<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">packaging</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">packaging</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">modules</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">module</span>&gt;</span>A<span class="tag">&lt;/<span class="name">module</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">module</span>&gt;</span>B<span class="tag">&lt;/<span class="name">module</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">module</span>&gt;</span>C<span class="tag">&lt;/<span class="name">module</span>&gt;</span></span><br><span class="line">       <span class="tag">&lt;<span class="name">module</span>&gt;</span>D<span class="tag">&lt;/<span class="name">module</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">modules</span>&gt;</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>gradle</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">rootProject.name = <span class="string">&#x27;test&#x27;</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">&#x27;A&#x27;</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">&#x27;B&#x27;</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">&#x27;C&#x27;</span></span><br><span class="line"><span class="keyword">include</span> <span class="string">&#x27;D&#x27;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-</li>
-</ul>
-<h3 id="gradle-properties"><a href="#gradle-properties" class="headerlink" title="gradle.properties"></a>gradle.properties</h3><p>主要用于声明构建相关的属性,比如某些依赖的版本可以在这里指定，某些全局属性比如名称之类的也可以在这里指定</p>
-<h3 id="插件"><a href="#插件" class="headerlink" title="插件"></a>插件</h3><p>Gradle的设计理念是，所有有用的特性都由Gradle插件提供，例如编写一个Java项目时，需要使用到 Java 插件， 它会将许多任务自动的加入到你项目里。Gradle本身提供了一系列的标准插件，无需多余配置只需要在你的build.gradle文件中加入 <code>apply plugin: &#39;java&#39;</code></p>
-<p><a target="_blank" rel="noopener" href="https://waynell.github.io/2015/04/13/gradle-use-03/">https://waynell.github.io/2015/04/13/gradle-use-03/</a></p>
-<h3 id="dependencies"><a href="#dependencies" class="headerlink" title="dependencies"></a>dependencies</h3><p>​    作用和maven的dependency标签一样，引入的依赖也有各种作用域，比maven分的更细</p>
-<ul>
-<li><p>多模块下，依赖其他模块</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">compile</span> <span class="keyword">project</span>(<span class="string">&quot;:A&quot;</span>)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>依赖本地路径文件</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">provided <span class="keyword">fileTree</span>(dir: <span class="string">&#x27;../honjane-demo-library/libs&#x27;</span>, <span class="keyword">include</span>: <span class="string">&#x27;*.jar&#x27;</span>)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>依赖远程文件,api会取代compile</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">compile</span> <span class="string">&quot;com.jakewharton:butterknife:8.2.1&quot;</span></span><br><span class="line">implementation <span class="string">&#x27;com.android.support:support-annotations:23.2.1&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>implementation：</strong>让依赖仅仅使用在自己的模块中，在编译的时候依赖项不会被他模块使用，但是在运行时可以被其他模块使用。</p>
-<p><strong>api:</strong> 无论是编译还是运行对其他模块都可见</p>
-<table>
-<thead>
-<tr>
-<th><code>implementation</code></th>
-<th><code>compile</code></th>
-<th>Gradle将依赖项添加到编译类路径，并将依赖项打包到构建输出。 但是，当您的模块配置一个<strong>implementation</strong>依赖项时，它让Gradle知道您不希望模块在编译时将依赖项泄漏给其他模块。 也就是说，依赖性仅在运行时可用于其他模块。使用此依赖项配置而不是<strong>api</strong>或<strong>compile</strong>（不建议使用）可以显着缩短构建时间，因为它减少了构建系统需要重新编译的模块数量。 例如，如果实现依赖项更改其API，则Gradle仅重新编译该依赖项以及直接依赖于它的模块。 大多数应用和测试模块都应使用此配置。</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>api</code></td>
-<td><code>compile</code></td>
-<td>Gradle将依赖项添加到编译类路径并构建输出。 当模块包含<strong>api</strong>依赖项时，它让Gradle知道模块想要将该依赖项传递到其他模块，以便在运行时和编译时都可以使用它。 此配置的行为与<strong>compile</strong>（现在已弃用）类似，但您应谨慎使用它，并且只能将您需要的依赖项传递给其他上游使用者。 这是因为，如果<strong>api</strong>依赖项更改其外部API，Gradle将重新编译在编译时有权访问该依赖项的所有模块。 因此，拥有大量的api依赖项可以显着增加构建时间。 除非您希望将依赖项的API公开给单独的模块，否则库模块应该使用<strong>implementation</strong>依赖项。</td>
-</tr>
-<tr>
-<td><code>compileOnly</code></td>
-<td><code>provided</code></td>
-<td>Gradle仅将依赖项添加到编译类路径（即，它不会添加到构建输出中）。 这在创建Android模块时非常有用，并且在编译期间需要依赖项，但在运行时是可选的。 如果使用此配置，则库模块必须包含运行时条件以检查依赖项是否可用，然后正常更改其行为，以便在未提供时仍可正常运行。 这有助于通过不添加不重要的瞬态依赖项来减小最终APK的大小。 此配置的行为与<strong>provided</strong>的一样（现已弃用）。</td>
-</tr>
-<tr>
-<td><code>runtimeOnly</code></td>
-<td><code>apk</code></td>
-<td>Gradle仅将依赖项添加到构建输出，以便在运行时使用。 也就是说，它不会添加到编译类路径中。 此配置的行为与<strong>apk</strong>（现已弃用）相同。</td>
-</tr>
-<tr>
-<td><code>annotationProcessor</code></td>
-<td><code>compile</code></td>
-<td>要添加对作为注释处理器的库的依赖关系，必须使用annotationProcessor配置将其添加到注释处理器类路径。 这是因为使用此配置可以通过将编译类路径与注释处理器类路径分开来提高构建性能。 如果Gradle在编译类路径上找到注释处理器，它会停用编译避免，这会对构建时间产生负面影响（Gradle 5.0及更高版本忽略在编译类路径中找到的注释处理器）.Android Gradle Plugin假定依赖是一个注释处理器，如果它的JAR文件 包含以下文件：META-INF / services / javax.annotation.processing.Processor。 如果插件检测到编译类路径上的注释处理器，则会产生构建错误。</td>
-</tr>
-</tbody></table>
-</li>
-</ul>
-<h2 id="关于IDEA"><a href="#关于IDEA" class="headerlink" title="关于IDEA"></a>关于IDEA</h2><p>如果新建的gradle工程没有src文件夹，则需要在该工程的build.gradle下添加如下task,可以直接执行，也可以在gradle插件中的Task/other下找到该任务，点击执行，就会生成src目录</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">task</span> createDirs &#123;</span><br><span class="line"><span class="comment">//根据名称生成，可以改为其他</span></span><br><span class="line">	    <span class="keyword">sourceSets</span>*.java.srcDirs*.<span class="keyword">each</span> &#123;</span><br><span class="line">	        it.mkdirs()</span><br><span class="line">	    &#125;</span><br><span class="line">	    <span class="keyword">sourceSets</span>*.resources.srcDirs*.<span class="keyword">each</span>&#123;</span><br><span class="line">	        it.mkdirs()</span><br><span class="line">	    &#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
-
-<p>每次都下载</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">distributionUrl=<span class="keyword">file</span>:<span class="comment">///d:/install/gradle-6.7.1-bin.zip</span></span><br></pre></td></tr></table></figure>
-
-
+          <p>摈弃maven的xml,拥抱代码配置，构建速度更快</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/12/23/gradle/">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -1091,7 +990,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
